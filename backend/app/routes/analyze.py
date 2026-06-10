@@ -48,6 +48,8 @@ def analyze(
         recommended_action=result["recommended_action"],
     )
     db.add(scan)
+    db.flush()
+
     behavior = simulate_behavior_metrics(
         result=result,
         warning_mode=warning_mode,
@@ -56,7 +58,7 @@ def analyze(
         decision_time_seconds=payload.decision_time_seconds,
         user_decision=payload.user_decision,
     )
-    db.add(UserBehaviorMetrics(user_id=current_user.id, **behavior))
+    db.add(UserBehaviorMetrics(user_id=current_user.id, scan_id=scan.id, **behavior))
     db.commit()
     db.refresh(scan)
 

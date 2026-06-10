@@ -34,6 +34,7 @@ export const api = {
   getScan: (id) => request(`/scans/${id}`),
   getAnalytics: () => request("/analytics"),
   getResearchMetrics: () => request("/research/metrics"),
+  resetResearchDemoData: () => request("/research/reset-demo-data", { method: "POST" }),
   exportResearchCsv: async () => {
     const response = await fetch(`${API_URL}/research/export.csv`, {
       headers: authHeaders({ Accept: "text/csv" }),

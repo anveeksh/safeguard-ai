@@ -1,5 +1,5 @@
 import { Camera, CheckCircle2, ClipboardPaste, FileText, Link2, MessageSquareText, Sparkles, UploadCloud } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { api } from "../api/client.js";
@@ -256,6 +256,7 @@ export default function AnalyzePage() {
   const [attachments, setAttachments] = useState({});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const intakeStartedAt = useRef(Date.now());
   const navigate = useNavigate();
 
   const analysisText = useMemo(() => composeAnalysisText(inputType, formData), [inputType, formData]);
@@ -267,6 +268,7 @@ export default function AnalyzePage() {
     setFormData(emptyValues(nextType));
     setScreenshot(null);
     setAttachments({});
+    intakeStartedAt.current = Date.now();
   }
 
   function setField(name, value) {
@@ -275,6 +277,7 @@ export default function AnalyzePage() {
 
   function useExample(example) {
     setFormData({ ...emptyValues(inputType), ...example.values });
+    intakeStartedAt.current = Date.now();
   }
 
   function handleAttachment(name, file) {
@@ -291,6 +294,7 @@ export default function AnalyzePage() {
         input_type: inputType,
         input_content: analysisText,
         warning_mode_used: warningMode,
+        decision_time_seconds: Math.max(1, Math.round((Date.now() - intakeStartedAt.current) / 100) / 10),
         structured_metadata: {
           evidence_type: inputType,
           evidence_label: evidenceTypes.find((item) => item.key === inputType)?.label,

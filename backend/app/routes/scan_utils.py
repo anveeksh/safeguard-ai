@@ -25,11 +25,13 @@ def parse_structured_metadata(raw_metadata: str) -> Dict[str, Any]:
 
 def scan_to_response(
     scan: Scan,
-    warning_mode: str | None = "explainable_ai_warning",
+    warning_mode: str | None = None,
     ignored_warnings: int = 0,
     risky_clicks: int = 0,
 ) -> schemas.ScanResponse:
     derived = analyze_content(scan.input_content, scan.input_type)
+    metadata = parse_structured_metadata(getattr(scan, "structured_metadata", "{}"))
+    selected_warning_mode = warning_mode or metadata.get("warning_mode_used") or "explainable_ai_warning"
     return schemas.ScanResponse(
         id=scan.id,
         user_id=scan.user_id,
@@ -39,11 +41,11 @@ def scan_to_response(
         risk_score=scan.risk_score,
         category=scan.category,
         tactics=parse_tactics(scan.tactics),
-        structured_metadata=parse_structured_metadata(getattr(scan, "structured_metadata", "{}")),
+        structured_metadata=metadata,
         threat_indicators=derived["threat_indicators"],
         explanation_breakdown=derived["explanation_breakdown"],
         warning_condition=build_warning_condition(
-            warning_mode=warning_mode,
+            warning_mode=selected_warning_mode,
             risk_level=scan.risk_level,
             category=scan.category,
             explanation=scan.explanation,

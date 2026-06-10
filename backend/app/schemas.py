@@ -99,7 +99,9 @@ class AnalyticsResponse(BaseModel):
 
 
 class UserBehaviorMetricsResponse(BaseModel):
+    id: Optional[int] = None
     user_id: int
+    scan_id: Optional[int] = None
     ignored_warnings: int
     risky_clicks: int
     average_decision_time: float

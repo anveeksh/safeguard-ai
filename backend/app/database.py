@@ -25,9 +25,18 @@ def _run_sqlite_migrations():
         return
 
     with engine.begin() as connection:
-        columns = [row[1] for row in connection.execute(text("PRAGMA table_info(scans)")).fetchall()]
-        if "structured_metadata" not in columns:
+        scan_columns = [row[1] for row in connection.execute(text("PRAGMA table_info(scans)")).fetchall()]
+        if "structured_metadata" not in scan_columns:
             connection.execute(text("ALTER TABLE scans ADD COLUMN structured_metadata TEXT DEFAULT '{}'"))
+
+        metric_columns = [
+            row[1] for row in connection.execute(text("PRAGMA table_info(user_behavior_metrics)")).fetchall()
+        ]
+        if metric_columns and "scan_id" not in metric_columns:
+            connection.execute(text("ALTER TABLE user_behavior_metrics ADD COLUMN scan_id INTEGER"))
+            connection.execute(
+                text("CREATE INDEX IF NOT EXISTS ix_user_behavior_metrics_scan_id ON user_behavior_metrics (scan_id)")
+            )
 
 
 def get_db():

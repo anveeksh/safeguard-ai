@@ -42,6 +42,7 @@ class UserBehaviorMetrics(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    scan_id = Column(Integer, ForeignKey("scans.id"), nullable=True, index=True)
     ignored_warnings = Column(Integer, nullable=False, default=0)
     risky_clicks = Column(Integer, nullable=False, default=0)
     average_decision_time = Column(Float, nullable=False, default=0.0)
@@ -51,3 +52,4 @@ class UserBehaviorMetrics(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), index=True)
 
     user = relationship("User", back_populates="behavior_metrics")
+    scan = relationship("Scan")
