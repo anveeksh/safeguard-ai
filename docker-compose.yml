@@ -1,0 +1,47 @@
+name: safeguard-ai
+
+services:
+  backend:
+    image: safeguard-ai-backend
+    container_name: safeguard-ai-backend
+    build:
+      context: ./backend
+    environment:
+      DATABASE_URL: sqlite:////data/safeguard_ai.db
+      SECRET_KEY: ${SECRET_KEY:-dev-docker-change-me-safe-guard-ai}
+      TOKEN_EXPIRE_HOURS: ${TOKEN_EXPIRE_HOURS:-24}
+    volumes:
+      - safeguard-ai-data:/data
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read()",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  frontend:
+    image: safeguard-ai-frontend
+    container_name: safeguard-ai-frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    restart: unless-stopped
+
+volumes:
+  safeguard-ai-data:
+    name: safeguard-ai-data
